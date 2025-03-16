@@ -23,8 +23,30 @@ if [[ -f "$STOW_DIR/.stowignore" ]]; then
   echo -e "Found ${BOLD}.stowignore${NC} with ${YELLOW}${#IGNORE_DIRS[@]}${NC} entries"
 fi
 
+# Detect the operating system and load system-specific stowignore file
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  OS_SPECIFIC_IGNORE="$STOW_DIR/macos.stowignore"
+  echo -e "Detected ${BOLD}macOS${NC} system"
+elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == "cygwin" ]]; then
+  OS_SPECIFIC_IGNORE="$STOW_DIR/windows.stowignore"
+  echo -e "Detected ${BOLD}Windows${NC} system"
+else
+  OS_SPECIFIC_IGNORE="$STOW_DIR/linux.stowignore"
+  echo -e "Detected ${BOLD}Linux${NC} system"
+fi
+
+# Load system-specific ignore file if it exists
+if [[ -f "$OS_SPECIFIC_IGNORE" ]]; then
+  echo -e "Loading system-specific ignore file: ${BOLD}$(basename "$OS_SPECIFIC_IGNORE")${NC}"
+  while IFS= read -r line; do
+    # Skip empty lines and comments
+    [[ -z "$line" || "$line" == \#* ]] && continue
+    IGNORE_DIRS+=("$line")
+  done < "$OS_SPECIFIC_IGNORE"
+fi
+
 # Add the .stowignore file itself and common VCS directories to the ignore list
-IGNORE_DIRS+=(".git" ".svn" ".hg")
+IGNORE_DIRS+=(".git" ".svn" ".hg" "*.stowignore")
 
 echo -e "\n${BOLD}Starting stow process for all directories...${NC}"
 echo -e "Ignoring: ${YELLOW}${IGNORE_DIRS[@]}${NC}\n"
