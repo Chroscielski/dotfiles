@@ -1,5 +1,13 @@
 #!/bin/zsh
 
+# Define color codes
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+BOLD='\033[1m'
+NC='\033[0m' # No Color
+
 # Set the stow directory to the current directory
 STOW_DIR=$(pwd)
 # Initialize an empty array for directories to ignore
@@ -12,14 +20,14 @@ if [[ -f "$STOW_DIR/.stowignore" ]]; then
     [[ -z "$line" || "$line" == \#* ]] && continue
     IGNORE_DIRS+=("$line")
   done < "$STOW_DIR/.stowignore"
-  echo "Found .stowignore with ${#IGNORE_DIRS[@]} entries"
+  echo -e "Found ${BOLD}.stowignore${NC} with ${YELLOW}${#IGNORE_DIRS[@]}${NC} entries"
 fi
 
 # Add the .stowignore file itself and common VCS directories to the ignore list
 IGNORE_DIRS+=(".git" ".svn" ".hg")
 
-echo "Starting stow process for all directories..."
-echo "Ignoring: ${IGNORE_DIRS[@]}"
+echo -e "\n${BOLD}Starting stow process for all directories...${NC}"
+echo -e "Ignoring: ${YELLOW}${IGNORE_DIRS[@]}${NC}\n"
 
 # Go through each directory
 for dir in */; do
@@ -28,21 +36,21 @@ for dir in */; do
   
   # Check if directory is in the ignore list
   if [[ ${IGNORE_DIRS[(ie)$dir]} -le ${#IGNORE_DIRS} ]]; then
-    echo "Skipping $dir (in ignore list)"
+    echo -e "Skipping ${YELLOW}${dir}${NC} (in ignore list)"
     continue
   fi
   
   # Run stow
-  echo "Stowing $dir..."
+  echo -e "Stowing ${BLUE}${BOLD}${dir}${NC}..."
   stow "$dir"
   
   # Check if stow was successful
   if [[ $? -eq 0 ]]; then
-    echo "✓ Successfully stowed $dir"
+    echo -e "${GREEN}✓ Successfully stowed ${BOLD}${dir}${NC}"
   else
-    echo "✗ Failed to stow $dir"
+    echo -e "${RED}✗ Failed to stow ${BOLD}${dir}${NC}"
   fi
 done
 
-echo "All directories have been processed"
+echo -e "\n${BOLD}All directories have been processed${NC}"
 
